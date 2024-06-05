@@ -1,0 +1,72 @@
+import numpy as np
+import pandas as pd
+from apyori import apriori
+data = pd.read_csv("data1.csv",header=None)
+data
+
+
+# In[14]:
+
+
+records = []
+for i in range (0,22):
+    records.append([str(data.values(i,j) for j in range (0,6))])
+
+
+# In[18]:
+
+
+association_rules = apriori(records, min_support = 0.5, min_confidence=0.7, min_lift=1.2, min_length=2)
+print(association_rules)
+
+
+# In[20]:
+
+
+import pandas as pd
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+
+
+# In[28]:
+
+
+data = pd.read_csv("data1.csv") 
+
+
+# In[29]:
+
+
+transactions = []
+for i in range(len(data)):
+    transactions.append([str(data.values[i, j]) for j in range(len(data.columns))])
+
+# One-hot encode the data
+te = TransactionEncoder()
+te_ary = te.fit(transactions).transform(transactions)
+df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
+
+
+# In[30]:
+
+
+# Apply the Apriori algorithm to find frequent itemsets
+frequent_itemsets = apriori(df_encoded, min_support=0.5, use_colnames=True)
+
+# Generate association rules
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.7)
+
+
+# In[31]:
+
+
+# Print the association rules
+for index, row in rules.iterrows():
+    antecedents = ', '.join(row['antecedents'])
+    consequents = ', '.join(row['consequents'])
+    print(f"Rule: {antecedents} -> {consequents}")
+    print(f"Support: {row['support']}")
+    print(f"Confidence: {row['confidence']}")
+    print(f"Lift: {row['lift']}")
+    print()
+

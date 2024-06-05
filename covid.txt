@@ -1,0 +1,82 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+
+
+# Load the dataset
+df = pd.read_csv("covid_19_india.csv")
+
+# Extract data for Kerala
+kerala_data = df[df['State/UnionTerritory'] == 'Kerala']
+
+# Convert 'Date' column to datetime object
+#kerala_data['Date'] = pd.to_datetime(kerala_data['Date']) NOT NEEDED
+
+# Set 'Date' as index
+#kerala_data.set_index('Date', inplace=True)NOT NEEDED
+actual_values = kerala_data.iloc[:7].values
+
+
+# In[20]:
+
+
+# Plot the time series
+plt.figure(figsize=(10, 6))
+plt.plot(kerala_data['Deaths'], label='Deaths')
+plt.xlabel('Date')
+plt.ylabel('Deaths')
+plt.title('Daily Deaths in Kerala')
+plt.legend()
+plt.show()
+
+
+# In[21]:
+
+
+# Stationarity check
+result = adfuller(kerala_data['Deaths'])
+print('ADF Statistic:', result[0])
+print('p-value:', result[1])
+
+
+# In[22]:
+
+
+# Differencing
+kerala_data_diff = kerala_data['Deaths'].diff().dropna()
+
+# ACF and PACF plots
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+plot_acf(kerala_data_diff, ax=axes[0])
+plot_pacf(kerala_data_diff, ax=axes[1])
+plt.show()
+
+
+# In[23]:
+
+
+#Fit ARIMA model
+model = ARIMA(kerala_data['Deaths'], order=(7, 0, 25))
+results = model.fit()
+
+# Forecast
+forecast = results.forecast(steps=10)
+
+
+# In[24]:
+
+
+#
+
+# Plot forecast
+plt.figure(figsize=(10, 6))
+plt.plot(kerala_data['Deaths'], label='Actual')
+plt.plot(forecast, label='Forecast')
+plt.xlabel('Date')
+plt.ylabel('Deaths')
+plt.title('Forecasted Deaths in Kerala')
+plt.legend()
+plt.show()

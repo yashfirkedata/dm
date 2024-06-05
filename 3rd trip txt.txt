@@ -1,0 +1,90 @@
+#Consider a suitable text dataset. Remove stop words, apply stemming and feature selection #techniques to represent documents as vectors. Classify documents and evaluate precision, #recall.
+
+import nltk
+from nltk.tokenize import word_tokenize
+
+
+import pandas as pd
+
+
+
+df=pd.read_csv('IMDB Dataset.csv', index_col=False, encoding='utf-8')
+
+
+
+df.head()
+
+
+
+import nltk
+from nltk.tokenize import word_tokenize
+
+# Download the 'punkt' resource
+nltk.download('punkt')
+
+reviews = df['review'].str.cat(sep=' ')
+#function to split text into word
+tokens = word_tokenize(reviews)
+vocabulary = set(tokens)
+print(len(vocabulary))
+frequency_dist = nltk.FreqDist(tokens)
+sorted(frequency_dist,key=frequency_dist.__getitem__, reverse=True)[0:50]
+
+
+
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+
+# Download the 'stopwords' resource
+nltk.download('stopwords')
+
+stop_words = set(stopwords.words('english'))
+tokens = [w for w in tokens if not w in stop_words]
+
+frequency_dist = nltk.FreqDist(tokens)
+tokens = list(filter(lambda token: token not in string.punctuation, tokens))
+tokens=[tokens for word in tokens if word.isalpha()]
+sorted(frequency_dist,key=frequency_dist.__getitem__, reverse=True)[0:50]
+
+
+
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+wordcloud = WordCloud().generate_from_frequencies(frequency_dist)
+plt.imshow(wordcloud)
+plt.axis("off")
+plt.show()
+
+
+X_train = df.loc[:24999, 'review'].values
+y_train = df.loc[:24999, 'sentiment'].values
+X_test = df.loc[25000:, 'review'].values
+y_test = df.loc[25000:, 'sentiment'].values
+
+
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+vectorizer = TfidfVectorizer()
+train_vectors = vectorizer.fit_transform(X_train)
+test_vectors = vectorizer.transform(X_test)
+print(train_vectors.shape, test_vectors.shape)
+
+
+
+from sklearn.naive_bayes import MultinomialNB
+clf = MultinomialNB().fit(train_vectors, y_train)
+
+
+
+from  sklearn.metrics  import accuracy_score
+predicted = clf.predict(test_vectors)
+print(accuracy_score(y_test,predicted))
+
+
+
+
+
+
+
+
